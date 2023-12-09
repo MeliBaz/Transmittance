@@ -2,17 +2,9 @@ void standard_method(TString input = " ", int laserId = 4)
 {
    vector<double> Mean_ratio_value;
    vector<double> Mean_ratio_ref;
-   vector<double>Mean_value;
-   vector<double>Mean_ref;
-   vector<double>Double_ratio;
    vector<int> Position_x;
    vector<int> Position_y;
-   vector<double> Ratio_value_gaus;
-   vector<double> Ratio_ref_gaus;
-   vector<double>Value;
-   vector<double>Reference;
 
-   
     struct Correction
     {
         string laser;
@@ -47,7 +39,7 @@ void standard_method(TString input = " ", int laserId = 4)
     };
     Correction cor_offset = corr_offset[laserId];
 
-   TFile *file = new TFile(input, "READ");
+    TFile *file = new TFile(input, "READ");
     TTree *tree = (TTree *)file->Get("tree");
     Double_t reference, x_scan, y_scan, value;
     Int_t filter;
@@ -92,9 +84,6 @@ void standard_method(TString input = " ", int laserId = 4)
         if (second_r == 0 && first_r != reference) second_r = reference;
 
         }
-    cout<<"x_min "<<min_x<< " "<<"y_min "<<min_y<<endl;
-    cout<<"x_max "<<max_x<< " "<<"y_max "<<max_y<<endl;
-   
     step_x = fabs(second_x - first_x);
     step_y = fabs(second_y - first_y);
     nx = ((max_x - min_x) / step_x)+1;
@@ -150,15 +139,11 @@ void standard_method(TString input = " ", int laserId = 4)
             if (j==k+9){
                 mean_value=sum_value/10.0;
                 mean_ref=sum_ref / 10.0;
-                Mean_value.push_back(mean_value);
-                Mean_ref.push_back(mean_ref);
             }    
             
         }
-
-      
         double_ratio=(mean_value/mean_ref)*cor_mirror.value;
-        cout<<"Double_ratio: "<<double_ratio<<endl;
+        cout<<"Transmittance: "<<double_ratio<<endl;
         cout<<"Position x : "<<Position_x[2*k+1]<<endl;
         cout<<"Position y : "<<Position_y[2*k+1]<<endl;
         hist_x->Fill(double_ratio);
@@ -167,7 +152,7 @@ void standard_method(TString input = " ", int laserId = 4)
 
         k+=10;
     }  
-    TCanvas *c5=new TCanvas();
+    TCanvas *c1=new TCanvas();
     hist_x->Draw();
 
     TCanvas *c2=new TCanvas("c2"," ",400,200);
