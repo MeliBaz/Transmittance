@@ -12,7 +12,7 @@ void standard_method(TString input = " ", int laserId = 4)
         double err_sys;
         double err_stat;
     };
-
+    //Mirror corrections for different wavelengths
     Correction corr[] = {{"none", 1, 0, 0},
                          {"uv", 1, 0, 0},
                          {"lightuv", 1.03645846, 0.0, 0.0},
@@ -24,10 +24,11 @@ void standard_method(TString input = " ", int laserId = 4)
     
 
     Correction cor_mirror = corr[laserId];
-
+   
+  //Reference diode offset correction 
     Double_t offsetMean_ref = +0.00073; // S1227-1010BR
     Double_t offsetMean_ref_err = 0.00034;
-
+  //Measurement diode offset correction  
     Correction corr_offset[] = {
     {"none", 0, 0, 0},
     {"uv", -0.00014, 0.00034, 0},
@@ -38,7 +39,7 @@ void standard_method(TString input = " ", int laserId = 4)
     {"red", -0.00009, 0.00037, 0},
     };
     Correction cor_offset = corr_offset[laserId];
-
+   //Read data from the root file
     TFile *file = new TFile(input, "READ");
     TTree *tree = (TTree *)file->Get("tree");
     Double_t reference, x_scan, y_scan, value;
@@ -66,6 +67,7 @@ void standard_method(TString input = " ", int laserId = 4)
     for (Int_t i = 0; i < numberOfEntries; i++)
     {
         tree->GetEntry(i);
+        //Find the range of data
         if (x_scan < min_x) min_x = x_scan;
         if (x_scan > max_x) max_x = x_scan;
         if (y_scan < min_y) min_y = y_scan;
@@ -84,6 +86,7 @@ void standard_method(TString input = " ", int laserId = 4)
         if (second_r == 0 && first_r != reference) second_r = reference;
 
         }
+    //Calculate the number of bins
     step_x = fabs(second_x - first_x);
     step_y = fabs(second_y - first_y);
     nx = ((max_x - min_x) / step_x)+1;
@@ -107,7 +110,7 @@ void standard_method(TString input = " ", int laserId = 4)
         Position_x.push_back(x_scan);
         Position_y.push_back(y_scan); 
        
-        //Bar in
+         //Calculating ratios of values from measurement and referent signals when the bar is in
             if (filter == 2) 
         {   
             ratio_value = (value - cor_offset.value) / (reference - offsetMean_ref);
@@ -115,7 +118,7 @@ void standard_method(TString input = " ", int laserId = 4)
             hist_value->Fill(value);
        
         }
-        //Bar out
+         //Calculating ratios of values from measurement and referent signals when the bar is out
         if (filter == 0) 
         {
             ratio_ref = (value - cor_offset.value) / (reference - offsetMean_ref);
