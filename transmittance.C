@@ -1,5 +1,4 @@
-void transmittance(TString input="~/Downloads/bar_measurements/IR_Nikon-105_faces2_442nm_230926_1.root",int laserId=4){ 
-//void transmittance(TString input="~/lab/mirror_data/181023/Mirror_Correction-all_set_100reps_442nm_231018_1_converted.root",int laserId=-1){
+void transmittance(TString input=" ",int laserId=-1){ 
   if (laserId<0){
     
     if (input.Contains("266nm"))  laserId=1;
@@ -9,7 +8,6 @@ void transmittance(TString input="~/Downloads/bar_measurements/IR_Nikon-105_face
     if (input.Contains("532nm"))  laserId=5;
     if (input.Contains("635nm"))  laserId=6;
   }
-  cout<<laserId<<endl;
   int Wavelength[] = {0, 266, 325, 405, 442, 532, 635};
   double mean_value[6];
   struct Correction {
@@ -24,11 +22,11 @@ void transmittance(TString input="~/Downloads/bar_measurements/IR_Nikon-105_face
     {"uv", 0.952951724, 0, 0},
     {"lightuv", 1.03645846, 0.0, 0.0},
     {"blue", 0.98172, 0.00064, 0},
-    {"lightblue",0.97481089, 0.01, 0},
+    {"lightblue",0.97574, 0.01, 0},
     {"green", 0.959840,0.00084 ,0 },
     {"red", 0.95, 0.00052,0 },
   };
-  //Marvin
+  //Mirror corrections from Marvin
     /*Correction corr[] = {
     {"none", 1, 0, 0},
     {"uv", 1.02313, 0, 0},
@@ -56,7 +54,7 @@ void transmittance(TString input="~/Downloads/bar_measurements/IR_Nikon-105_face
   };
   Correction cor_offset = corr_offset[laserId];
 
-  //Read data from the root file
+//Read data from the root file
   TFile *file = new TFile(input, "READ");
   TTree *tree = (TTree *)file->Get("tree");
   double reference, x_scan, y_scan, value, mreference, mvalue;
@@ -66,7 +64,8 @@ void transmittance(TString input="~/Downloads/bar_measurements/IR_Nikon-105_face
   tree->SetBranchAddress("x_scan", &x_scan);
   tree->SetBranchAddress("value", &value);
   tree->SetBranchAddress("filter", &filter);
-  int numberOfEntries = tree->GetEntries();
+
+int numberOfEntries = tree->GetEntries();
 
   double min_x = 1000, max_x = 0, min_y = 1000, max_y = 0;
   double first_x, second_x = 0, first_y, second_y = 0, step_x, step_y;
@@ -74,7 +73,9 @@ void transmittance(TString input="~/Downloads/bar_measurements/IR_Nikon-105_face
   double p_x, p_y;
   double ratio_ref, ratio_value, double_ratio;
   double v_max=0,v_min=5,first_v, second_v = 0,step_v,nv;
-  for (int i = 0; i < numberOfEntries; i++) {
+  double r_max=0,r_min=5,first_r, second_r = 0,step_r,nr;
+ 
+ for (int i = 0; i < numberOfEntries; i++) {
     tree->GetEntry(i);
   
     //Find the range of data
@@ -90,32 +91,34 @@ void transmittance(TString input="~/Downloads/bar_measurements/IR_Nikon-105_face
     if (value> v_max) v_max= value;
     if (i == 0) first_v = value;
     if (second_v == 0 && first_v != value) second_v = value;
+    if (reference < r_min) r_min = reference;
+    if (reference> r_max) r_max= reference;
+    if (i == 0) first_r = reference;
+    if (second_r == 0 && first_r != reference) second_r = reference;
+
   }
   cout << "x_min " << min_x << " " << "y_min " << min_y << endl;
   cout << "x_max " << max_x << " " << "y_max " << max_y << endl;
 
-  //Calculate the number of bins
+//Calculate the number of bins
   step_x = fabs(second_x - first_x);
   step_y = fabs(second_y - first_y);
   nx = ((max_x - min_x) / step_x) + 1;
   ny = (max_y - min_y) / step_y + 1;
   step_v = fabs(second_v - first_v);
   nv = ((v_max - v_min) / step_v) + 1;
-  cout<<"step"<<step_v<<endl;
+  step_r = fabs(second_r - first_r);
+  nr = ((r_max - r_min) / step_r) + 1;
   
-cout<<"v max "<<v_max<<"v min"<<v_min<<endl;
-  //TH1F *hist_value = new TH1F("hist_value", "Value;Intensity;Entries", 300, 1.5, 3);
-  //TH1F *hist_value = new TH1F("hist_value", "Value;Intensity;Entries", 150, 0.9, 2);
   TH1F *hist_value = new TH1F("hist_value", "Value;Intensity;Entries", nv,v_min , v_max);
-  TH1F *hist_reference = new TH1F("hist_reference", "Reference;Intensity;Entries", 150, 0.8, 2);
-  TH1F *hist_ratio_ref = new TH1F("hist_ratio_ref", "Ratio_Ref;Intensity;Entries", 100, 0.8, 2);
+  TH1F *hist_reference = new TH1F("hist_reference", "Reference;Intensity;Entries", nr, r_min, r_max);
+  TH1F *hist_ratio_ref = new TH1F("hist_ratio_ref", "Ratio_Ref;Intensity;Entries", 150, 0.8, 2);
   TH1F *hist_ratio_value = new TH1F("hist_ratio_value", "Ratio_Value;Intensity;Entries", 100, 0.8, 2);
   TH1F *hist_double_ratio = new TH1F("Transmittance", "Transmittance;Intensity;Entries", 150, 0.8, 1.1);
   TH2F *hist_ratio_map = new TH2F("Ratio map", "Ratio map;x [mm];y [mm]", nx, min_x - 0.5 * step_x,max_x + 0.5 * step_x, ny, min_y - 0.5 * step_y, max_y + 0.5 * step_y);
 
-  for (int i = 0; i < numberOfEntries; i++) {
+  for (int i = 240; i < numberOfEntries; i++) {
     tree->GetEntry(i);
-    
 
     //Define the initial positions and the filter inital value
     if (i == 0) {
@@ -128,16 +131,17 @@ cout<<"v max "<<v_max<<"v min"<<v_min<<endl;
       //Fit histogram value with the Gaussian function and obtain mean value
       auto r = hist_value->Fit("gaus", "SQL");
       mvalue = r->Parameter(1);
-    
       //mvalue=hist_value->GetMean();
       hist_value->Draw();
       //gPad->Update();
       //gPad->WaitPrimitive();
+
       //Fit histogram reference with the Gaussian function and obtain mean value
       r = hist_reference->Fit("gaus", "SQL");
       mreference = r->Parameter(1);
       //mreference=hist_reference->GetMean();
-      
+      //gPad->Update();
+      //gPad->WaitPrimitive();
 
       //Calulate the ratio of value to reference based on the bar in (filter=2) and bar out (filter=0) filters
       if(p_filter == 0) {
@@ -146,11 +150,10 @@ cout<<"v max "<<v_max<<"v min"<<v_min<<endl;
       }
 
       if(p_filter == 2) {
-
         ratio_value = (mvalue - cor_offset.value) / (mreference - offsetMean_ref);
         double_ratio = (ratio_value / ratio_ref) * (cor_mirror.value);	
   
-        std::cout << p_filter<<" mvalue " << mvalue<<" "<<mreference << " double_ratio " << double_ratio << std::endl;
+        cout << p_filter<<" mvalue " << mvalue<<" "<<mreference << " double_ratio " << double_ratio << endl;
   
         hist_double_ratio->Fill(double_ratio);
         hist_ratio_map->Fill(p_x, p_y, double_ratio);
@@ -176,7 +179,7 @@ cout<<"v max "<<v_max<<"v min"<<v_min<<endl;
   double mean = r->Parameter(1);
   double mean_error = r->ParError(1);
   mean_error=sqrt(pow(mean_error,2)+pow(cor_mirror.err_sys,2));
-  cout<<"Corr "<<1/mean<<endl;
+  //cout<<"Corr "<<1/mean<<endl;
 
   //Create a file with data from the double ratio histogram to plot TGraphErrors (Double_ratio_graph.C) 
   TFile *output_data = new TFile(Form("double_ratio_%d.root", laserId), "recreate");
@@ -188,8 +191,8 @@ cout<<"v max "<<v_max<<"v min"<<v_min<<endl;
   output_data->Write();
 
  
-
-  hist_ratio_map->SetMinimum(0.91);
+  hist_ratio_map->GetXaxis()->SetRangeUser(65, 73);
+  hist_ratio_map->SetMinimum(0.5);
   TCanvas *c3 = new TCanvas("c3", "Raio reference", 800, 600);
   hist_ratio_ref->Draw();
   TCanvas *c4 = new TCanvas("c4", "Ratio value", 800, 600);
@@ -213,6 +216,7 @@ cout<<"v max "<<v_max<<"v min"<<v_min<<endl;
   c6->Print(folder + Form("hist_ratio_map_%d.png", laserId));
 
   TCanvas *c11 = new TCanvas("c11", input, 400, 200);
+  c11->SetTitle("Method with Gaussian fit");
   c11->Divide(2, 1);
   c11->cd(1);
   hist_ratio_map->Draw("colz text");
