@@ -1,0 +1,37 @@
+#!/bin/bash
+
+threads=4
+start_time=$(date +%s)
+waitForMe (){
+    while : 
+    do 
+	activth=$(ps aux | grep "transmittance.C" | grep -v "grep" | wc -l)
+	printf "\r$statusline [$activth] ---- [$(($(date +%s) - start_time)) s] "
+	if [ "$activth" -lt "$1" ]; then 
+	    break  
+	fi
+	sleep 1
+    done
+
+}
+if [[ "$1" == *_converted.root ]]
+then 
+        folder=$1
+else 
+        folder=$1/*_converted.root
+fi   
+if [ -z "$1" ]; then folder='*_converted.root';fi 
+for file in $folder; do   
+    if [ -f "$file" ]; then
+            echo $file
+            root -b -q -l ~/lab/macro/transmittance.C"(\"$file\")" >/dev/null 2>&1 &
+            waitForMe $threads
+           
+         
+    fi
+
+done    
+waitForMe 1
+hadd -f transmittance_all.root double_ratio_*.root
+echo "Done"
+#root -b -q -l ~/Downloads/bar_measurements/Double_ratio_graph.C
