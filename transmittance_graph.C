@@ -43,7 +43,7 @@ for (Int_t i = 0; i < ch.GetEntries(); i++)
     graph->SetPointError(i,0,delta_R);
     
 }
-
+// Plotting predictions from scalar scattering theory for surface roughness 5, 10, 15 angstroms
 TF1 *func5 = new TF1("func5","1-pow(4* TMath::Pi()*0.5*cos(TMath::ATan(refn(x)))*refn(x)/x,2)",150,700);
 TF1 *func10 = new TF1("func10","1-pow(4* TMath::Pi()*1*cos(TMath::ATan(refn(x)))*refn(x)/x,2)",150,700);
 TF1 *func15 = new TF1("func15","1-pow(4* TMath::Pi()*1.5*cos(TMath::ATan(refn(x)))*refn(x)/x,2)",150,700);
