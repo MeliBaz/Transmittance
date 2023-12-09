@@ -35,6 +35,7 @@ for (Int_t i = 0; i < ch.GetEntries(); i++)
     L=apsorbtion_length(Wavelength*1.0);
     double br_angle=TMath::ATan(refn->Eval(Wavelength));
     R=TMath::Power(mean*exp(-l/L),1/N);
+    //Calculating errors
     delta_l=sqrt(pow(1/cos(br_angle),2)+pow(1*sin(br_angle)*0.1/pow(cos(br_angle),2),2) );
     delta_R=sqrt(pow((1/N)*pow(mean,(1-N)/N)*exp(-l/(N*L))*mean_error,2)+pow(-pow(mean,1/N)*exp(-l/(L*N))*delta_l/(L*N),2) );
     cout<<"Mean : "<<mean<<" Mean error : "<<mean_error<<" Wavelength : "<<Wavelength<<" exp "<<exp(-l/L)<<" R : " <<R<<" delta l "<<delta_l<<" delta R "<<delta_R<<endl;
