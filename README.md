@@ -1,5 +1,5 @@
 # Calculation of transmission coefficient
-• The data obtained from the measurement is stored in a .dat file, which can be converted to a .root file using the convert.C macro or shell script convert. If there are
+• The data obtained from the measurement is stored in a .dat file, which can be converted to a .root file using the convert.C macro or shell script convert. If there are\\
 multiple files to be converted, the convert shell script can be run in the directory
 where the files are located. All .dat files will be converted to .root files with the
 suffix converted.root.
