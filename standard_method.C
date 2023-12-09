@@ -1,4 +1,4 @@
-void standard_method(TString input = "IR_Nikon-105_faces2_442nm_230926_1.root", int laserId = 4)
+void standard_method(TString input = " ", int laserId = 4)
 {
    vector<double> Mean_ratio_value;
    vector<double> Mean_ratio_ref;
