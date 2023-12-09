@@ -126,7 +126,7 @@ void standard_method(TString input = " ", int laserId = 4)
     }
   
    
-
+   //Calculating mean value of every 10 obtained ratios between measurement signal (value) and reference signal
     Int_t k=0;
     while(k<Mean_ratio_value.size() && k<Mean_ratio_value.size() ) 
     {
