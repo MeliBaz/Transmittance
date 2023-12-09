@@ -1,0 +1,36 @@
+#!/bin/bash
+
+threads=4
+start_time=$(date +%s)
+waitForMe (){
+    while : 
+    do 
+	activth=$(ps aux | grep "convert.C" | grep -v "grep" | wc -l)
+	printf "\r$statusline [$activth] ---- [$(($(date +%s) - start_time)) s] "
+	if [ "$activth" -lt "$1" ]; then 
+	    break  
+	fi
+	sleep 1
+    done
+
+}
+
+
+if [[ "$1" == *.dat ]]
+then 
+        folder=$1
+else 
+        folder=$1/*.dat
+fi   
+if [ -z "$1" ]; then folder='*.dat';fi    
+
+for file in $folder; do
+        echo $file
+        root  -b -q -l ~/lab/macro/convert.C"(\"$file\")" >/dev/null &
+        waitForMe $threads
+        
+    
+
+done    
+waitForMe 1
+echo "Convert done"
